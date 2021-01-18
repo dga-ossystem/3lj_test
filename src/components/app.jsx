@@ -38,6 +38,7 @@ const App = () => {
 
     useEffect(() => {
         isValid && createAPI(baseCurr, setRates)();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [baseCurr, targetCurr, amount]);
 
     const baseCurrChangeHandler = (event) => {
