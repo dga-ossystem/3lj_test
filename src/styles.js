@@ -26,7 +26,7 @@ export const useStyles = makeStyles((theme) => ({
         paddingBottom: theme.spacing(2),
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
-        minHeight: 300,
+        minHeight: 200,
         background: '#fffcfc',
         borderTop: '3px solid #000000',
         borderRadius: 0
