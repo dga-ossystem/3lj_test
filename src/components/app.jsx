@@ -1,72 +1,38 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
+import {useSelector, useDispatch } from 'react-redux'
 import {ThemeProvider} from '@material-ui/core/styles';
 import {
     Container,
     Card,
-    Select,
-    MenuItem,
-    TextField,
-    IconButton,
     LinearProgress,
-    Typography,
 } from '@material-ui/core';
-import SwapIcon from '@material-ui/icons/Cached';
-import {Currency} from '../const.js';
+import {Currency, CurrType, CACHE_TTL} from '../const.js';
 import {useStyles, theme} from '../styles.js';
-import {createAPI} from "../api.js";
+import {ActionCreator, Operation} from "../store/action.js";
+import CurrSelect from "./currSelect.jsx";
+import TextInput from "./textInput.jsx";
+import SwapBtn from "./swapBtn.jsx";
+import RateResponseElement from "./rateResponseElement.jsx";
+import withCurrSelect from "../hocs/with-curr-select.js";
+const WrappedCurrSelect = withCurrSelect(CurrSelect);
 
 
 const App = () => {
     const classes = useStyles();
+    const choosenCurrencies = useSelector(state => state.choosenCurrencies);
+    const loadedRates = useSelector(state => state.loadedRates.rates);
+    const isFetching = useSelector(state => state.isFetching);
+    const requestTime = useSelector(state => state.requestTime);
+    const dispatch = useDispatch();
 
-    const [baseCurr, setBaseCurr] = useState(Currency.USD);
-    const [targetCurr, setTargetCurr] = useState(Currency.EUR);
-    const [amount, setAmount] = useState('');
-    const [rate, setRate] = useState({});
-    const [isValid, setIsValid] = useState(true);
-    const [isFetching, setIsFetching] = useState(false);
-
-    const setRates = (data) => {
-        setRate({
-            'exchange_rate': data[targetCurr],
-            'currency_code': targetCurr,
-            'amount': (amount * data[targetCurr]).toFixed(2),
-        });
-
-        setTimeout(() => {setIsFetching(false)}, 1000);
-    };
-
-    useEffect(() => {
-        isValid && createAPI(baseCurr, setRates)();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [baseCurr, targetCurr, amount]);
-
-    const baseCurrChangeHandler = (event) => {
-        setBaseCurr(event.target.value);
-    };
-
-    const targetCurrChangeHandler = (event) => {
-        setTargetCurr(event.target.value);
-    };
-
-    const inputChangeHandler = (event) => {
-        setIsFetching(true);
-        let value = event.target.value.replace(/^0(?=(\d))/, '$&.').replace(/[a-zA-Zа-яА-Я]/g, '');
-        setAmount(value);
-        setIsValid(+value > 0);
+    const getRates = () => {
+        const now = new Date().getTime();
+        (now - requestTime) > CACHE_TTL && dispatch(Operation.loadRates(choosenCurrencies.baseCurr));
     };
 
     const swapCurrencies = () => {
-        setBaseCurr(targetCurr);
-        setTargetCurr(baseCurr);
-    };
-
-    const animateSwapping = (target) => {
-        target.classList.add(classes.rotateAnimation);
-
-        setTimeout(() => {
-            target.classList.remove(classes.rotateAnimation);
-        }, 300);
+        dispatch(Operation.loadRates(choosenCurrencies.targetCurr));
+        dispatch(ActionCreator.swapCurrencies(choosenCurrencies));
     };
 
     return (
@@ -78,92 +44,39 @@ const App = () => {
 
 
                 <div className={classes.inputContainer}>
-                    <TextField
-                        error={!isValid}
-                        helperText={!isValid && 'The number must be greater that 0'}
-                        className={classes.input}
-                        label='Amount'
-                        value={amount}
-                        onChange={inputChangeHandler}
+                    <TextInput
+                    onAmountChanged={getRates}
                     />
                 </div>
 
                 <div className={classes.currContainer}>
                     <div className={classes.inputContainer}>
-                        <Select
-                            className={classes.input}
-                            value={baseCurr}
-                            onChange={baseCurrChangeHandler}
-                        >
-                            <MenuItem
-                                value={Currency.EUR}
-                                disabled={Currency.EUR === targetCurr}
-                            >
-                                {Currency.EUR}
-                            </MenuItem>
-                            <MenuItem
-                                value={Currency.USD}
-                                disabled={Currency.USD === targetCurr}
-                            >
-                                {Currency.USD}
-                            </MenuItem>
-                            <MenuItem
-                                value={Currency.ILS}
-                                disabled={Currency.ILS === targetCurr}
-                            >
-                                {Currency.ILS}
-                            </MenuItem>
-                        </Select>
+                        <WrappedCurrSelect
+                            values={Currency}
+                            currType={CurrType.BASE}
+                            disabledValue={choosenCurrencies.targetCurr}
+                        />
                     </div>
 
-                    <IconButton
-                        aria-label="swap"
-                        className={classes.swapBtn}
-                        onClick={(event) => {
-                            event.preventDefault();
-                            animateSwapping(event.currentTarget);
-                            swapCurrencies();
-                        }}
-                    >
-                        <SwapIcon/>
-                    </IconButton>
+                    <SwapBtn
+                        onBtnClick={swapCurrencies}
+                    />
 
                     <div className={classes.inputContainer}>
-                        <Select
-                            className={classes.input}
-                            value={targetCurr}
-                            onChange={targetCurrChangeHandler}
-                        >
-                            <MenuItem
-                                value={Currency.EUR}
-                                disabled={Currency.EUR === baseCurr}
-                            >
-                                {Currency.EUR}
-                            </MenuItem>
-                            <MenuItem
-                                value={Currency.USD}
-                                disabled={Currency.USD === baseCurr}
-                            >
-                                {Currency.USD}
-                            </MenuItem>
-                            <MenuItem
-                                value={Currency.ILS}
-                                disabled={Currency.ILS === baseCurr}
-                            >
-                                {Currency.ILS}
-                            </MenuItem>
-                        </Select>
+                        <WrappedCurrSelect
+                            values={Currency}
+                            currType={CurrType.TARGET}
+                            disabledValue={choosenCurrencies.baseCurr}
+                        />
                     </div>
                 </div>
 
                 {
-                    (Object.keys(rate).length !== 0 && isValid && amount !== '' && !isFetching) && (
-                        <div>
-                            <hr/>
-                            <Typography variant="subtitle1" component="p">
-                                {`${amount} ${baseCurr} = ${rate.amount} ${rate.currency_code} (${rate.exchange_rate})`}
-                            </Typography>
-                        </div>
+                    (loadedRates && Object.keys(loadedRates).length !== 0 && !isFetching) && (
+                        <RateResponseElement
+                            choosenCurrencies={choosenCurrencies}
+                            rates={loadedRates}
+                        />
                     )
                 }
 

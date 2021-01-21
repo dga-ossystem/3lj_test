@@ -35,6 +35,7 @@ export const useStyles = makeStyles((theme) => ({
     inputContainer: {
         marginTop: 10,
         marginBottom: 10,
+        width: '100%',
     },
 
     input: {
@@ -44,6 +45,7 @@ export const useStyles = makeStyles((theme) => ({
     currContainer: {
         display: 'flex',
         alignItems: 'center',
+        width: '100%',
     },
 
     rotateAnimation: {

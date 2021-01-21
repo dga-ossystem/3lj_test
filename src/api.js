@@ -1,14 +1,13 @@
 import axios from "axios";
 
-export const createAPI = (baseCurr, callback) => {
+export const createAPI = () => {
     const api = axios.create({
-        baseURL: `https://api.exchangeratesapi.io/latest?base=${baseCurr}`,
+        baseURL: 'https://api.exchangeratesapi.io/',
         timeout: 5000,
     });
 
     const onSuccess = (response) => {
-        callback(response.data.rates);
-        return response.data;
+        return response;
     };
 
     const onFail = (err) => {
