@@ -6,6 +6,7 @@ const ActionType = {
     SET_CHOOSEN_CURRENCIES: 'SET_CHOOSEN_CURRENCIES',
     SET_AMOUNT: 'SET_AMOUNT',
     SET_IS_FETCHING: 'SET_IS_FETCHING',
+    SET_ERROR: 'SET_ERROR',
 };
 
 const ActionCreator = {
@@ -33,6 +34,10 @@ const ActionCreator = {
         type: ActionType.SET_IS_FETCHING,
         payload: status,
     }),
+
+    setError: () => ({
+        type: ActionType.SET_ERROR,
+    }),
 };
 
 const Operation = {
@@ -43,6 +48,9 @@ const Operation = {
                 setTimeout(() => {
                     dispatch(ActionCreator.loadRates(response.data));
                 }, REQUEST_DELAY);
+            })
+            .catch(() => {
+                dispatch(ActionCreator.setError());
             });
     },
 };

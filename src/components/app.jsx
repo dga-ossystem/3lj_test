@@ -5,6 +5,7 @@ import {
     Container,
     Card,
     LinearProgress,
+    Typography,
 } from '@material-ui/core';
 import {Currency, CurrType, CACHE_TTL} from '../const.js';
 import {useStyles, theme} from '../styles.js';
@@ -23,6 +24,7 @@ const App = () => {
     const loadedRates = useSelector(state => state.loadedRates.rates);
     const isFetching = useSelector(state => state.isFetching);
     const requestTime = useSelector(state => state.requestTime);
+    const isError = useSelector(state => state.requestError);
     const dispatch = useDispatch();
 
     const getRates = () => {
@@ -72,11 +74,20 @@ const App = () => {
                 </div>
 
                 {
-                    (loadedRates && Object.keys(loadedRates).length !== 0 && !isFetching) && (
+                    (loadedRates && Object.keys(loadedRates).length !== 0 && !isFetching && !isError) && (
                         <RateResponseElement
                             choosenCurrencies={choosenCurrencies}
                             rates={loadedRates}
                         />
+                    )
+                }
+
+                {
+                    isError && (
+                        <div>
+                            <hr/>
+                            <Typography variant="subtitle2" component="p" style={{color: 'red'}}>Something went wrong... <br/>Please try again later</Typography>
+                        </div>
                     )
                 }
 

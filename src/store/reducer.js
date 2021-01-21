@@ -10,6 +10,7 @@ const initialState = {
     loadedRates: [],
     isFetching: false,
     requestTime: '',
+    requestError: false,
 };
 
 const reducer = (state = initialState, action) => {
@@ -44,6 +45,12 @@ const reducer = (state = initialState, action) => {
 
         case ActionType.SET_IS_FETCHING:
             return  {...state, isFetching: action.payload}
+
+        case ActionType.SET_ERROR:
+            return Object.assign({}, state, {
+                isFetching: false,
+                requestError: true,
+            });
     }
     return state;
 };
