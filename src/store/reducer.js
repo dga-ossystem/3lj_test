@@ -16,29 +16,32 @@ const initialState = {
 const reducer = (state = initialState, action) => {
     switch (action.type) {
         case ActionType.LOAD_RATES:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 loadedRates: action.payload,
                 isFetching: false,
                 requestTime: new Date().getTime(),
-            });
+            };
 
         case ActionType.SWAP_CURRENCIES:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 choosenCurrencies: {
-                    amount: state.choosenCurrencies.amount,
+                ...state.choosenCurrencies,
                     baseCurr: action.payload.targetCurr,
                     targetCurr: action.payload.baseCurr,
                 },
-            });
+            };
 
         case ActionType.SET_CHOOSEN_CURRENCIES:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 choosenCurrencies: {
                     amount: action.payload.amount,
                     baseCurr: action.payload.baseCurr,
                     targetCurr: action.payload.targetCurr,
                 },
-            });
+            };
 
         case ActionType.SET_AMOUNT:
             return  {...state, choosenCurrencies: {...state.choosenCurrencies, amount: action.payload}}
@@ -47,10 +50,7 @@ const reducer = (state = initialState, action) => {
             return  {...state, isFetching: action.payload}
 
         case ActionType.SET_ERROR:
-            return Object.assign({}, state, {
-                isFetching: false,
-                requestError: true,
-            });
+            return {...state, isFetching: false, requestError: true,};
     }
     return state;
 };
